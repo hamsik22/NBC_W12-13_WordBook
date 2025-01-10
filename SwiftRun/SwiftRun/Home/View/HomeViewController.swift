@@ -10,11 +10,7 @@ import RxSwift
 
 class HomeViewController: UIViewController {
     
-    let homeView: HomeView = {
-        let view = HomeView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
+    let homeView = HomeView()
     private let viewModel = HomeViewVM()
     private let disposeBag = DisposeBag()
     
@@ -29,8 +25,11 @@ class HomeViewController: UIViewController {
 
 // MARK: - Setup
 extension HomeViewController {
+    // 레이아웃 설정
     private func setup() {
         view.addSubview(homeView)
+        homeView.translatesAutoresizingMaskIntoConstraints = false
+        viewModel.fetchAllCategories()
         NSLayoutConstraint.activate([
             homeView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             homeView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -38,20 +37,24 @@ extension HomeViewController {
             homeView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
+    // 데이터 바인딩
     private func bindCollectionView() {
-        viewModel.mockItems
+        // Cell 구성
+        viewModel.categoriesRelay
             .bind(to: homeView.wordBookCollectionView.rx.items(cellIdentifier: WordBookCollectionCell.identifier, cellType: WordBookCollectionCell.self)) { index, item, cell in
                 cell.configure(with: item)
             }
             .disposed(by: disposeBag)
         
+        // 터치한 Cell 바인딩
         homeView.wordBookCollectionView.rx.itemSelected
-            .withLatestFrom(viewModel.mockItems) { indexPath, items in
+            .withLatestFrom(viewModel.categoriesRelay) { indexPath, items in
                 items[indexPath.row]
             }
             .bind(to: viewModel.itemSelected)
             .disposed(by: disposeBag)
         
+        // Cell 터치 시 화면 이동
         viewModel.itemSelected
             .subscribe(onNext: { [weak self] selectedItem in
                 guard let self = self else { return }
@@ -59,11 +62,12 @@ extension HomeViewController {
             })
             .disposed(by: disposeBag)
     }
-    private func navigateToDetailScreen(with item: String) {
-            let mockViewController = MockViewController(item: item) // 이동할 뷰컨트롤러 생성
-            self.navigationController?.pushViewController(mockViewController, animated: true)
-        }
-
+    // 화면 이동
+    private func navigateToDetailScreen(with item: Category) {
+        let mockViewController = MockViewController(item: item.name) // 이동할 뷰컨트롤러 생성
+        self.navigationController?.pushViewController(mockViewController, animated: true)
+    }
+    
 }
 
 @available(iOS 17.0, *)

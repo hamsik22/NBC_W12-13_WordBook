@@ -18,6 +18,7 @@ class WordBookCollectionCell: UICollectionViewCell {
         label.layer.borderWidth = 2
         label.layer.cornerRadius = 10
         label.layer.borderColor = UIColor.blue.cgColor
+        label.numberOfLines = 2
         return label
     }()
     
@@ -35,8 +36,8 @@ class WordBookCollectionCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(with title: String) {
-        wordBookTitle.text = title
+    func configure(with item: Category) {
+        wordBookTitle.text = item.name
     }
 }
 
